@@ -30,3 +30,7 @@ def extract_pdf_text(url: str = Query(..., description="PDF file URL")):
     plain_text = pdf_url_to_text(url)
     cleaned = clean_text(plain_text)
     return cleaned
+
+@app.get("/")
+def root():
+    return {"message": "PDF Render API is running. No root url exists... (Dnaielsson)"}
