@@ -26,6 +26,7 @@ def clean_text(text):
 
 @app.get("/extract", response_class=PlainTextResponse)
 def extract_pdf_text(url: str = Query(..., description="PDF file URL")):
+    print(f"API called with URL: {url}")
     plain_text = pdf_url_to_text(url)
     cleaned = clean_text(plain_text)
     return cleaned
