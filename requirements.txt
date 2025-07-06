@@ -2,3 +2,5 @@ fastapi
 uvicorn
 pdfminer.six
 requests
+tiktoken
+openai

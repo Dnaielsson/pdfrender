@@ -62,6 +62,7 @@ def summarize_pdf(
 ):
     plain_text = pdf_url_to_text(url)
     token_count = count_tokens(plain_text)
+    print(f"token count: {token_count}")
     groq_api_key = os.environ.get("GROQ_API_KEY")
     if not groq_api_key:
         return "Groq API key not set in environment."
