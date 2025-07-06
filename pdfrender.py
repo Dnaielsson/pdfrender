@@ -44,6 +44,16 @@ def count_tokens(text, model="gpt-3.5-turbo"):
     enc = tiktoken.encoding_for_model(model)
     return len(enc.encode(text))
 
+def chunk_text(text, max_tokens=5000, model="gpt-3.5-turbo"):
+    enc = tiktoken.encoding_for_model(model)
+    tokens = enc.encode(text)
+    chunks = []
+    for i in range(0, len(tokens), max_tokens):
+        chunk_tokens = tokens[i:i+max_tokens]
+        chunk_text = enc.decode(chunk_tokens)
+        chunks.append(chunk_text)
+    return chunks
+
 @app.get("/extract", response_class=PlainTextResponse)
 def extract_pdf_text(url: str = Query(..., description="PDF file URL")):
     print(f"API called with URL: {url}")
@@ -66,5 +76,14 @@ def summarize_pdf(
     groq_api_key = os.environ.get("GROQ_API_KEY")
     if not groq_api_key:
         return "Groq API key not set in environment."
-    summary = summarize_text(plain_text, groq_api_key, percent)
-    return f"Original tokens: {token_count}\n\nSummary:\n{summary}"
+
+    # Split text into chunks under the token limit
+    chunks = chunk_text(plain_text, max_tokens=5000, model="llama3-70b-8192")
+    summaries = []
+    for idx, chunk in enumerate(chunks):
+        print(f"Summarizing chunk {idx+1}/{len(chunks)}")
+        summary = summarize_text(chunk, groq_api_key, percent)
+        summaries.append(summary)
+    # Optionally, summarize the combined summaries if needed
+    combined_summary = "\n\n".join(summaries)
+    return f"Original tokens: {token_count}\n\nSummary:\n{combined_summary}"
