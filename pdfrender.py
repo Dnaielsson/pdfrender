@@ -6,6 +6,7 @@ from fastapi import FastAPI, Query, Header
 from fastapi.responses import PlainTextResponse
 import openai
 import os
+import tiktoken
 
 app = FastAPI()
 
@@ -38,6 +39,10 @@ def summarize_text(text, api_key, percent=75):
         temperature=0.5,
     )
     return response.choices[0].message.content
+
+def count_tokens(text, model="gpt-3.5-turbo"):
+    enc = tiktoken.encoding_for_model(model)
+    return len(enc.encode(text))
 
 @app.get("/extract", response_class=PlainTextResponse)
 def extract_pdf_text(url: str = Query(..., description="PDF file URL")):
