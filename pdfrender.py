@@ -7,6 +7,8 @@ from fastapi.responses import PlainTextResponse
 import openai
 import os
 import tiktoken
+from dotenv import load_dotenv
+load_dotenv()
 
 app = FastAPI()
 
@@ -30,7 +32,7 @@ def clean_text(text):
 def summarize_text(text, api_key, percent=75):
     client = openai.OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
     prompt = (
-        f"Summarize the following text to about {percent}% of its original length:\n\n{text}"
+        f"Shorten the following text to about {percent}% of its original length. The shorter text should still contain the most relevant information:\n\n{text}"
     )
     response = client.chat.completions.create(
         model="llama3-70b-8192",  # or another Groq-supported model
@@ -40,12 +42,12 @@ def summarize_text(text, api_key, percent=75):
     )
     return response.choices[0].message.content
 
-def count_tokens(text, model="gpt-3.5-turbo"):
-    enc = tiktoken.encoding_for_model(model)
+def count_tokens(text, encoding_name="cl100k_base"):
+    enc = tiktoken.get_encoding(encoding_name)
     return len(enc.encode(text))
 
-def chunk_text(text, max_tokens=5000, model="gpt-3.5-turbo"):
-    enc = tiktoken.encoding_for_model(model)
+def chunk_text(text, max_tokens=5000, encoding_name="cl100k_base"):
+    enc = tiktoken.get_encoding(encoding_name)
     tokens = enc.encode(text)
     chunks = []
     for i in range(0, len(tokens), max_tokens):
@@ -78,7 +80,8 @@ def summarize_pdf(
         return "Groq API key not set in environment."
 
     # Split text into chunks under the token limit
-    chunks = chunk_text(plain_text, max_tokens=5000, model="llama3-70b-8192")
+    
+    chunks = chunk_text(plain_text, max_tokens=5000)
     summaries = []
     for idx, chunk in enumerate(chunks):
         print(f"Summarizing chunk {idx+1}/{len(chunks)}")
