@@ -4,3 +4,4 @@ pdfminer.six
 requests
 tiktoken
 openai
+dotenv
